@@ -60,6 +60,7 @@ export default function HotelAmenitiesForm({ onSuccess }: HotelAmenitiesFormProp
   const [customAmenity, setCustomAmenity] = useState("")
   const [activeTab, setActiveTab] = useState("current")
 
+  console.log(selectedHotel)
   const handleToggleAmenity = (amenityId: string) => {
     setSelectedAmenities((prev) =>
       prev.includes(amenityId) ? prev.filter((id) => id !== amenityId) : [...prev, amenityId],
@@ -70,6 +71,7 @@ export default function HotelAmenitiesForm({ onSuccess }: HotelAmenitiesFormProp
     if (customAmenity.trim() && !selectedAmenities.includes(customAmenity.trim())) {
       setSelectedAmenities((prev) => [...prev, customAmenity.trim()])
       setCustomAmenity("")
+
     }
   }
 
@@ -100,15 +102,15 @@ export default function HotelAmenitiesForm({ onSuccess }: HotelAmenitiesFormProp
         },
         body: JSON.stringify({
           query: `
-            mutation UpdateHotelAmenities($hotelId: ID!, $amenities: [String!]!) {
-              hotel {
-                updateHotelAmenities(hotelId: $hotelId, amenities: $amenities) {
+            mutation AddHotelAmenities($hotelId: String!, $amenities: [String!]!) {
+            
+                addHotelAmenities(hotelId: $hotelId, amenities: $amenities) {
                   id
                   name
                   amenities
                   updatedAt
                 }
-              }
+              
             }
           `,
           variables: {

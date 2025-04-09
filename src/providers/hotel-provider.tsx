@@ -2,23 +2,35 @@
 
 import React, { createContext, useState, useContext, useEffect } from "react"
 import { useSession } from "next-auth/react"
-
+import { HotelStatus,HotelPolicyInput } from "@/graphql/types"
 export type Hotel = {
   id: string
   name: string
   description: string
-  status: string
+  status: HotelStatus
   amenities: string[]
-  policies: {
-    checkInTime: string
-    checkOutTime: string
-    petPolicy: string
-  }
+  policies?:HotelPolicyInput
   images: string[]
   createdAt: string
   updatedAt: string
   floorCount: number
 	roomCount : number
+  
+address?: String
+city?: String
+state?: String
+country?: String
+zipcode?: String
+contactPhone?: String
+contactEmail?: String
+adminId?: String
+
+latitude?: GLfloat
+longitude?: GLfloat
+website?: String
+
+starRating?: number
+
 }
 
 // Define the context type
@@ -87,20 +99,28 @@ export function HotelProvider({ children }: { children: React.ReactNode }) {
               hotel {
                 getHotelsByAdmin(adminId: "${userId}") {
                   id
-                  name
-                  description
-                  status
-                  amenities
-                  policies {
-                    checkInTime
-                    checkOutTime
-                    petPolicy
-                  }
-                  images
-                  createdAt
-                  updatedAt
-                  floorCount
-			            roomCount
+name
+address
+city
+state
+country
+zipcode
+contactPhone
+contactEmail
+adminId
+status
+floorCount
+policies{checkInTime,checkOutTime,cancellationHours,petPolicy,extraBedPolicy,paymentMethods}
+createdAt
+updatedAt
+description
+latitude
+longitude
+website
+amenities
+roomCount
+starRating
+images
                 }
               }
             }

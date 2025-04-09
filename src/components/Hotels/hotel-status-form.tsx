@@ -11,6 +11,9 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { AlertCircle, Loader2, Trash2 } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { CHANGE_HOTEL_STATUS } from "@/graphql/hotel/mutations"
+import { useMutation } from "@apollo/client"
+import { HotelStatus } from "@/graphql/types"
 import {
   Dialog,
   DialogContent,
@@ -43,6 +46,7 @@ export default function HotelStatusForm({ hotel, onSuccess }: HotelStatusFormPro
       reason: "",
     },
   })
+   const [changeHotelStaus, { loading }] = useMutation(CHANGE_HOTEL_STATUS);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true)
@@ -62,6 +66,15 @@ export default function HotelStatusForm({ hotel, onSuccess }: HotelStatusFormPro
         }
       });
       */
+      const statusEnumValue = HotelStatus[values.status.toUpperCase() as keyof typeof HotelStatus];
+      const { data } = await changeHotelStaus({
+        variables: {
+          hotelId: hotel.id,
+          status:  statusEnumValue,
+          reason: values.reason || undefined,
+        }
+        
+      });
 
       onSuccess()
     } catch (err) {

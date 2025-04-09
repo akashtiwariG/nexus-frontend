@@ -11,6 +11,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { AlertCircle, Loader2 } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { UPDATE_HOTEL } from "@/graphql/hotel/mutations"
+import { useMutation } from "@apollo/client"
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Hotel name must be at least 2 characters." }),
@@ -26,6 +28,7 @@ type HotelBasicInfoFormProps = {
   hotel: any
   onSuccess: () => void
 }
+ 
 
 export default function HotelBasicInfoForm({ hotel, onSuccess }: HotelBasicInfoFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -43,6 +46,8 @@ export default function HotelBasicInfoForm({ hotel, onSuccess }: HotelBasicInfoF
       starRating: hotel.starRating,
     },
   })
+
+  const [updateHotel, { loading }] = useMutation(UPDATE_HOTEL);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true)
@@ -69,7 +74,20 @@ export default function HotelBasicInfoForm({ hotel, onSuccess }: HotelBasicInfoF
         }
       });
       */
-
+      const { data } = await updateHotel({
+        variables: {
+          id: hotel.id,
+          hotelData:{
+            name: values.name,
+            description: values.description,
+            contactPhone: values.contactPhone,
+            contactEmail: values.contactEmail,
+            website: values.website,
+            floorCount: values.floorCount,
+            starRating: values.starRating,
+          }
+        },
+      });
       onSuccess()
     } catch (err) {
       setError("Failed to update hotel information. Please try again.")

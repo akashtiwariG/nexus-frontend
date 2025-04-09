@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState,useEffect } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
@@ -11,6 +11,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent } from "@/components/ui/card"
 import { AlertCircle, DollarSign, Loader2 } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { UPDATE_ROOM_PRICING } from "@/graphql/room/mutations"
+import { useMutation,useQuery } from "@apollo/client"
+import { useHotelContext } from "@/providers/hotel-provider"
+import { ROOMS } from "@/graphql/room/queries"
 
 const formSchema = z.object({
   roomId: z.string().min(1, { message: "Room ID is required" }),
@@ -25,6 +29,7 @@ type UpdateRoomPricingFormProps = {
 }
 
 export default function UpdateRoomPricingForm({ onSuccess }: UpdateRoomPricingFormProps) {
+  const { selectedHotel, setSelectedHotel, userHotels } = useHotelContext()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [rooms, setRooms] = useState([
@@ -43,6 +48,23 @@ export default function UpdateRoomPricingForm({ onSuccess }: UpdateRoomPricingFo
       extraBedPrice: 0,
     },
   })
+  const { data, loading } = useQuery(ROOMS, {
+      variables: { hoteld: selectedHotel?.id }, // Replace with the actual hotel ID
+      fetchPolicy: "network-only", // Ensures fresh data on each request
+    })
+    console.log(data)
+  
+    useEffect(() => {
+      if (data?.rooms) {
+        setRooms(
+          data.rooms.map((room: any) => ({
+            id: room.id,
+            number: room.roomNumber,
+            type: room.roomType,
+          }))
+        )
+      }
+    }, [data])
 
   const handleRoomChange = (roomId: string) => {
     const room = rooms.find((r) => r.id === roomId)
@@ -52,6 +74,7 @@ export default function UpdateRoomPricingForm({ onSuccess }: UpdateRoomPricingFo
       form.setValue("extraBedPrice", room.extraBedPrice)
     }
   }
+  const [updateRoomPricing] = useMutation(UPDATE_ROOM_PRICING);
 
   async function onSubmit(values: FormValues) {
     setIsSubmitting(true)
@@ -71,6 +94,15 @@ export default function UpdateRoomPricingForm({ onSuccess }: UpdateRoomPricingFo
         }
       });
       */
+      const { data } = await updateRoomPricing({
+        variables: {
+          roomId: values.roomId,
+          pricePerNight: values.pricePerNight,
+          extraBedPrice: values.extraBedPrice,
+      
+        },
+      });
+      console.log(data)
 
       onSuccess()
       form.reset()

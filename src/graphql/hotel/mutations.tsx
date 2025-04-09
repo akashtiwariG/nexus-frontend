@@ -58,7 +58,7 @@ export const UPDATE_HOTEL_POLICIES = gql`
       policies {
         checkInTime
         checkOutTime
-        cancellationPolicy
+        cancellationHours
       }
     }
   }
@@ -92,7 +92,7 @@ export const UPDATE_HOTEL_IMAGES = gql`
 `;
 
 export const CHANGE_HOTEL_STATUS = gql`
-  mutation ChangeHotelStatus($hotelId: String!, $status: String!, $reason: String) {
+  mutation ChangeHotelStatus($hotelId: String!, $status: HotelStatus!, $reason: String) {
     changeHotelStatus(hotelId: $hotelId, status: $status, reason: $reason) {
       id
       status

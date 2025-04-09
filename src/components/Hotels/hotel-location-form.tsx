@@ -10,7 +10,8 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlertCircle, Loader2 } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-
+import { UPDATE_HOTEL_LOCATION } from "@/graphql/hotel/mutations"
+import { useMutation } from "@apollo/client"
 const formSchema = z.object({
   address: z.string().min(3, { message: "Address must be at least 3 characters." }),
   city: z.string().min(2, { message: "City is required." }),
@@ -43,9 +44,12 @@ export default function HotelLocationForm({ hotel, onSuccess }: HotelLocationFor
     },
   })
 
+  const [updateHotel, { loading }] = useMutation(UPDATE_HOTEL_LOCATION);
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true)
     setError(null)
+
+    
 
     try {
       // Simulate API call
@@ -66,7 +70,18 @@ export default function HotelLocationForm({ hotel, onSuccess }: HotelLocationFor
         }
       });
       */
-
+      const { data } = await updateHotel({
+        variables: {
+          hotelId: hotel.id,
+      latitude: values.latitude,
+      longitude: values.longitude,
+      address: values.address,
+      city: values.city,
+      state: values.state,
+      country: values.country,
+      zipcode: values.zipcode
+        },
+      });
       onSuccess()
     } catch (err) {
       setError("Failed to update hotel location. Please try again.")

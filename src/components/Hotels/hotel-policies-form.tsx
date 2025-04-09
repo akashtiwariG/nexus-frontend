@@ -11,7 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox"
 import { AlertCircle, Loader2 } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-
+import { UPDATE_HOTEL_POLICIES } from "@/graphql/hotel/mutations"
+import { useMutation } from "@apollo/client"
 const paymentMethods = [
   { id: "CREDIT_CARD", label: "Credit Card" },
   { id: "DEBIT_CARD", label: "Debit Card" },
@@ -64,6 +65,8 @@ export default function HotelPoliciesForm({ hotel, onSuccess }: HotelPoliciesFor
     },
   })
 
+  const [updateHotelPolicies, { loading }] = useMutation(UPDATE_HOTEL_POLICIES);
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true)
     setError(null)
@@ -87,6 +90,19 @@ export default function HotelPoliciesForm({ hotel, onSuccess }: HotelPoliciesFor
         }
       });
       */
+     const {data} = await updateHotelPolicies({
+      variables: {
+        hotelId: hotel.id,
+        policies: {
+          checkInTime: values.checkInTime,
+          checkOutTime: values.checkOutTime,
+          cancellationHours: values.cancellationHours,
+          paymentMethods: values.paymentMethods,
+          petPolicy: values.petPolicy,
+        }
+      }
+    });
+     
 
       onSuccess()
     } catch (err) {

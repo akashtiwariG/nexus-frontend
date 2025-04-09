@@ -15,6 +15,8 @@ import HotelLocationForm from "./hotel-location-form"
 import HotelAdminForm from "./hotel-admin-form"
 import HotelStatusForm from "./hotel-status-form"
 import CreateHotelForm from "./create-hotel-form"
+import { useHotelContext } from "@/providers/hotel-provider"
+
 import {
   Dialog,
   DialogContent,
@@ -25,12 +27,15 @@ import {
 } from "@/components/ui/dialog"
 
 export default function HotelSettingsPage() {
+  const { selectedHotel, setSelectedHotel, userHotels } = useHotelContext()
   const [activeTab, setActiveTab] = useState("basic-info")
-  const [selectedHotelId, setSelectedHotelId] = useState<string | null>(null)
+  const [selectedHotelId, setSelectedHotelId] = useState<string | null>(selectedHotel?.id ||null)
   const [hotelData, setHotelData] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const { toast } = useToast()
+  
+
 
   // Mock function to fetch hotel data - replace with actual API call
   useEffect(() => {
@@ -39,26 +44,26 @@ export default function HotelSettingsPage() {
       setTimeout(() => {
         // Mock data
         setHotelData({
-          id: "67a473107f94fb7765b95957",
-          name: "Grand Hotel",
-          description: "A luxury hotel in the heart of the city",
-          address: "123 Main Street",
-          city: "New York",
-          state: "NY",
-          country: "USA",
-          zipcode: "10001",
-          latitude: 40.7128,
-          longitude: -74.006,
-          contactPhone: "+1-212-555-0123",
-          contactEmail: "info@grandhotel.com",
-          website: "https://grandhotel.com",
-          adminId: "67a37b9b346eff546b54277a",
-          floorCount: 20,
-          starRating: 5,
-          status: "ACTIVE",
-          amenities: ["POOL", "SPA", "RESTAURANT", "GYM"],
-          images: ["https://storage.example.com/hotel-lobby.jpg", "https://storage.example.com/suite-bedroom.jpg"],
-          policies: {
+          id: selectedHotel?.id || "",
+          name: selectedHotel?.name || "",
+          description: selectedHotel?.description || "",
+          address:selectedHotel?.address || "",
+          city: selectedHotel?.city || "",
+          state: selectedHotel?.state || "",
+          country: selectedHotel?.country || "",
+          zipcode: selectedHotel?.zipcode || "",
+          latitude: selectedHotel?.latitude || 40.7128,
+          longitude: selectedHotel?.latitude || -74.006,
+          contactPhone: selectedHotel?.contactPhone || "",
+          contactEmail: selectedHotel?.contactEmail || "",
+          website: selectedHotel?.website || "",
+          adminId: selectedHotel?.adminId || "",
+          floorCount:selectedHotel?.floorCount || 20,
+          starRating: selectedHotel?.starRating ||  5,
+          status: selectedHotel?.status ||"",
+          amenities: selectedHotel?.amenities || ["POOL", "SPA", "RESTAURANT", "GYM"],
+          images: selectedHotel?.images || ["https://storage.example.com/hotel-lobby.jpg", "https://storage.example.com/suite-bedroom.jpg"],
+          policies: selectedHotel?.policies || {
             checkInTime: "14:00",
             checkOutTime: "11:00",
             cancellationHours: 24,
@@ -173,7 +178,7 @@ export default function HotelSettingsPage() {
             </TabsContent>
 
             <TabsContent value="amenities">
-              <HotelAmenitiesForm hotel={hotelData} onSuccess={handleUpdateSuccess} />
+              <HotelAmenitiesForm  onSuccess={handleUpdateSuccess} />
             </TabsContent>
 
             <TabsContent value="images">

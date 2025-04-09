@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
@@ -11,13 +11,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent } from "@/components/ui/card"
 import { AlertCircle, Loader2 } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { useQuery } from "@apollo/client"
+import { ROOMS } from "@/graphql/room/queries"
+import { useHotelContext } from "@/providers/hotel-provider"
+import { UPDATE_ROOM_STATUS } from "@/graphql/room/mutations"
+import { useMutation } from "@apollo/client"
 
 const roomStatuses = [
   { value: "AVAILABLE", label: "Available" },
   { value: "OCCUPIED", label: "Occupied" },
   { value: "CLEANING", label: "Cleaning" },
   { value: "MAINTENANCE", label: "Maintenance" },
-  { value: "OUT_OF_SERVICE", label: "Out of Service" },
+  { value: "OUT_OF_ORDER", label: "Out of Order" },
 ]
 
 const formSchema = z.object({
@@ -33,6 +38,7 @@ type UpdateRoomStatusFormProps = {
 }
 
 export default function UpdateRoomStatusForm({ onSuccess }: UpdateRoomStatusFormProps) {
+  const { selectedHotel, setSelectedHotel, userHotels } = useHotelContext()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [rooms, setRooms] = useState([
@@ -40,6 +46,7 @@ export default function UpdateRoomStatusForm({ onSuccess }: UpdateRoomStatusForm
     { id: "67a47d32329751d24b9742e2", number: "302", type: "Standard" },
     { id: "67a47d32329751d24b9742e3", number: "303", type: "Suite" },
   ])
+  const [selectedRoomId,setSelectedRoomId] = useState("");
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -50,9 +57,32 @@ export default function UpdateRoomStatusForm({ onSuccess }: UpdateRoomStatusForm
     },
   })
 
+  const { data, loading } = useQuery(ROOMS, {
+    variables: { hoteld: selectedHotel?.id }, // Replace with the actual hotel ID
+    fetchPolicy: "network-only", // Ensures fresh data on each request
+  })
+  console.log(data)
+
+  useEffect(() => {
+    if (data?.rooms) {
+      setRooms(
+        data.rooms.map((room: any) => ({
+          id: room.id,
+          number: room.roomNumber,
+          type: room.roomType,
+        }))
+      )
+    }
+  }, [data])
+  
+  const [updateRoomStatus] = useMutation(UPDATE_ROOM_STATUS);
+
   async function onSubmit(values: FormValues) {
     setIsSubmitting(true)
     setError(null)
+
+    
+
 
     try {
       // Simulate API call
@@ -68,6 +98,13 @@ export default function UpdateRoomStatusForm({ onSuccess }: UpdateRoomStatusForm
         }
       });
       */
+      const { data } = await updateRoomStatus({
+        variables: {
+          roomId: values.roomId,
+          status:values.status
+      
+        },
+      });
 
       onSuccess()
       form.reset()
@@ -106,7 +143,7 @@ export default function UpdateRoomStatusForm({ onSuccess }: UpdateRoomStatusForm
                     </FormControl>
                     <SelectContent>
                       {rooms.map((room) => (
-                        <SelectItem key={room.id} value={room.id}>
+                        <SelectItem key={room.id} value={room.id} >
                           Room {room.number} - {room.type}
                         </SelectItem>
                       ))}

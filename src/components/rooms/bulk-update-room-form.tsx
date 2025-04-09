@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState,useEffect } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
@@ -12,6 +12,10 @@ import { Card, CardContent } from "@/components/ui/card"
 import { AlertCircle, Loader2, Users } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Checkbox } from "@/components/ui/checkbox"
+import { BULK_UPDATE_ROOM_STATUS } from "@/graphql/room/mutations"
+import { useMutation,useQuery } from "@apollo/client"
+import { useHotelContext } from "@/providers/hotel-provider"
+import { ROOMS } from "@/graphql/room/queries"
 
 const roomStatuses = [
   { value: "AVAILABLE", label: "Available" },
@@ -34,6 +38,11 @@ type BulkUpdateRoomFormProps = {
 }
 
 export default function BulkUpdateRoomForm({ onSuccess }: BulkUpdateRoomFormProps) {
+
+  const [bulkUpdateRoomStatus] = useMutation(BULK_UPDATE_ROOM_STATUS);
+
+   const { selectedHotel, setSelectedHotel, userHotels } = useHotelContext()
+
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [rooms, setRooms] = useState([
@@ -43,6 +52,23 @@ export default function BulkUpdateRoomForm({ onSuccess }: BulkUpdateRoomFormProp
     { id: "67a47d32329751d24b9742e4", number: "401", type: "Deluxe", floor: 4 },
     { id: "67a47d32329751d24b9742e5", number: "402", type: "Standard", floor: 4 },
   ])
+
+  const { data } = useQuery(ROOMS, {
+    variables: { hotelId: selectedHotel?.id }, // Replace with the actual hotel ID
+    fetchPolicy: "network-only", // Ensures fresh data on each request
+  })
+
+useEffect(() => {
+    if (data?.rooms) {
+      setRooms(
+        data.rooms.map((room: any) => ({
+          id: room.id,
+          number: room.roomNumber,
+          type: room.roomType,
+        }))
+      )
+    }
+  }, [data])
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -71,6 +97,15 @@ export default function BulkUpdateRoomForm({ onSuccess }: BulkUpdateRoomFormProp
         }
       });
       */
+
+      const response = await bulkUpdateRoomStatus({
+        variables: {
+          roomIds: values.roomIds,
+          status: values.status,
+          notes: values.notes || undefined,
+        }
+      });
+      console.log(response)
 
       onSuccess()
       form.reset()
@@ -215,4 +250,3 @@ export default function BulkUpdateRoomForm({ onSuccess }: BulkUpdateRoomFormProp
     </Form>
   )
 }
-

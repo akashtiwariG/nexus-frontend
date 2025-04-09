@@ -15,7 +15,10 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useHotelContext } from "@/providers/hotel-provider"
 import type { Hotel } from "@/providers/hotel-provider"
-
+import { ASSIGN_HOTEL_ADMIN } from "@/graphql/hotel/mutations"
+import { useMutation } from "@apollo/client"
+import { SEARCH_USERS } from "@/graphql/user/queries"
+import { useQuery } from "@apollo/client"
 const formSchema = z.object({
   adminId: z.string().min(1, { message: "Admin ID is required." }),
 })
@@ -41,6 +44,13 @@ export default function HotelAdminForm({ hotel, onSuccess }: HotelAdminFormProps
     },
   })
 
+  const { data, error: searchError, refetch } =  useQuery(SEARCH_USERS, {
+    variables: { query: searchQuery, skip: 0, limit: 10 },
+    skip: !isSearching, // Prevents query from running initially
+  });
+
+
+
   const handleSearch = async () => {
     if (!searchQuery.trim()) return
 
@@ -48,8 +58,9 @@ export default function HotelAdminForm({ hotel, onSuccess }: HotelAdminFormProps
 
     try {
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      const { data: searchData } = await refetch(); 
 
+      
       // Mock search results
       setSearchResults([
         {
@@ -71,6 +82,11 @@ export default function HotelAdminForm({ hotel, onSuccess }: HotelAdminFormProps
           avatar: "/placeholder.svg?height=40&width=40",
         },
       ])
+
+     if(searchData?.user?.searchUsers) setSearchResults(...[
+      searchData.user.searchUsers
+      ])
+      console.log(searchResults)
     } catch (err) {
       console.error(err)
     } finally {
@@ -84,10 +100,12 @@ export default function HotelAdminForm({ hotel, onSuccess }: HotelAdminFormProps
     setSearchResults([])
     setSearchQuery("")
   }
+  const [assignHotelAdmin, { loading }] = useMutation(ASSIGN_HOTEL_ADMIN);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true)
     setError(null)
+    
 
     try {
       // Simulate API call
@@ -102,6 +120,12 @@ export default function HotelAdminForm({ hotel, onSuccess }: HotelAdminFormProps
         }
       });
       */
+     const {data} = await assignHotelAdmin({
+      variables:{
+        hotelId: hotel.id,
+          adminId: values.adminId,
+      }
+     })
 
       onSuccess()
     } catch (err) {

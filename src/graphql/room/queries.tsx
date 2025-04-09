@@ -130,3 +130,12 @@ export const GET_ROOMS_BY_STATUS = gql`
     }
   }
 `;
+
+export const ROOMS = gql`
+  query Rooms($hoteld: String!) {
+    rooms(hotelId: $hoteld) {
+      id
+      roomNumber
+      roomType
+    }
+  }`
