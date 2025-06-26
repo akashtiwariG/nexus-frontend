@@ -779,15 +779,7 @@ export function BookingDetails({ booking, onBack }: BookingDetailsProps) {
         </div>
       </div>
 
-      <AnimatePresence>
-        {isUpgradeModalOpen && (
-          <RoomUpgradeModal 
-          onClose={() => setIsUpgradeModalOpen(false)} 
-          bookingId={booking} // Changed: booking to bookingId to match RoomUpgradeModal props
-          currentRoomType={bookingData.roomType}
-          />
-        )}
-      </AnimatePresence>
+      
       
       {/* You would need to create an ExtendBookingModal component */}
       {/* {isExtendModalOpen && (
