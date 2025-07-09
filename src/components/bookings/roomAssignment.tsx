@@ -231,7 +231,7 @@ export default function RoomGrid({ hotelId, roomType, floorCount = 5, bookingId,
         rooms(
           hotelId: "${hotelId}"
           ${roomType ? `roomType: ${roomType}` : ""}
-          limit: 100
+          
         ) {
           id
           roomNumber
