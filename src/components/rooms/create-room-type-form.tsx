@@ -515,7 +515,6 @@ const amenitiesOptions = [
 const formSchema = z.object({
     hotelId: z.string().min(1, { message: "Hotel ID is required" }),
     roomType: z.string().min(1, { message: "Room type is required" }),
-    customRoomTypeName: z.string().optional(),
     pricePerNight: z.coerce.number().positive({ message: "Price must be a positive number" }),
     pricePerNightMax: z.coerce.number().positive({ message: "Price Max must be a positive number" }),
     pricePerNightMin: z.coerce.number().positive({ message: "Price Min must be a positive number" }),
@@ -544,13 +543,14 @@ export default function CreateRoomTypeForm({ onSuccess }: CreateRoomTypeFormProp
   const [showCustomRoomTypeInput, setShowCustomRoomTypeInput] = useState(false)
   const [customRoomTypeName, setCustomRoomTypeName] = useState("")
   const { selectedHotel } = useHotelContext();
+  const [fetchedRoomTypes,setFetchedRoomTypes] = useState<{value:string;label:string}[]>([])  
+  const [roomType, setRoomType] = useState<string>(defaultRoomTypes[0].value);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       hotelId: selectedHotel?.id || "", 
       roomType: "DELUXE",
-      customRoomTypeName: "",
       pricePerNight: 200,
       pricePerNightMax: 400,
       pricePerNightMin: 100,
@@ -575,8 +575,49 @@ export default function CreateRoomTypeForm({ onSuccess }: CreateRoomTypeFormProp
     }
   }, [selectedHotel, form]);
 
+  useEffect(() =>{
+
+    const fetchRoomTypes = async () =>{
+      if(!selectedHotel) return
+
+      try{
+        const resp = await fetch("http://localhost:8000/graphql",{
+          method:"POST",
+          headers:{"Content-Type":"application/json"},
+          body: JSON.stringify({
+            query: `
+              query getAllRoomTypes($hotelId: String!) {
+                getRoomTypes(hotelId: $hotelId) {
+                  roomType
+                }
+              }
+            `,
+            variables:{hotelId:selectedHotel.id}    
+          })
+        })
+
+        const json  = await resp.json();
+        if(json.errors) throw new Error(json.errors[0].message);
+
+        const types = json.data.getRoomTypes.map((rt:any) =>({
+          value:rt.roomType,
+          label:rt.roomType.charAt(0).toUpperCase() + rt.roomType.slice(1).toLowerCase(),
+        }))
+
+        setFetchedRoomTypes(types);
+        if(types.length>0) setRoomType(types[0].value);
+      }
+      catch(err){
+        console.error("Failed to fetch room Types:",err);
+      }
+    };
+
+    fetchRoomTypes();
+
+  },[selectedHotel])
+
   // Get all room types (default + custom)
-  const allRoomTypes = [...defaultRoomTypes, ...customRoomTypes]
+  const allRoomTypes = [...fetchedRoomTypes, ...customRoomTypes,]
 
   const handleAddCustomRoomType = () => {
     if (customRoomTypeName.trim()) {

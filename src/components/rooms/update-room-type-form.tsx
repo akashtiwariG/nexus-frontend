@@ -91,6 +91,49 @@ export default function UpdateRoomTypeForm({ onSuccess }: Props) {
 
   const [roomType, setRoomType] = useState<string>("STANDARD");
   const [loading, setLoading] = useState(false);
+  const [fetchedRoomTypes,setFetchedRoomTypes] = useState<{value:string;label:string}[]>([])   
+
+
+  useEffect(() =>{
+
+    const fetchRoomTypes = async () =>{
+      if(!selectedHotel) return
+
+      try{
+        const resp = await fetch("http://localhost:8000/graphql",{
+          method:"POST",
+          headers:{"Content-Type":"application/json"},
+          body: JSON.stringify({
+            query: `
+              query getAllRoomTypes($hotelId: String!) {
+                getRoomTypes(hotelId: $hotelId) {
+                  roomType
+                }
+              }
+            `,
+            variables:{hotelId:selectedHotel.id}    
+          })
+        })
+
+        const json  = await resp.json();
+        if(json.errors) throw new Error(json.errors[0].message);
+
+        const types = json.data.getRoomTypes.map((rt:any) =>({
+          value:rt.roomType,
+          label:rt.roomType.charAt(0).toUpperCase() + rt.roomType.slice(1).toLowerCase(),
+        }))
+
+        setFetchedRoomTypes(types);
+        if(types.length>0) setRoomType(types[0].value);
+      }
+      catch(err){
+        console.error("Failed to fetch room Types:",err);
+      }
+    };
+
+    fetchRoomTypes();
+
+  },[selectedHotel])
 
   // Fetch and prefill form when roomType changes
   useEffect(() => {
@@ -188,7 +231,7 @@ export default function UpdateRoomTypeForm({ onSuccess }: Props) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {roomTypesList.map((rt) => (
+                {fetchedRoomTypes.map((rt) => (
                   <SelectItem key={rt.value} value={rt.value}>
                     {rt.label}
                   </SelectItem>

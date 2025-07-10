@@ -1509,16 +1509,24 @@ const CreateBookingPage: React.FC = () => {
   const [pricingSummary, setPricingSummary] = useState<Record<string, RoomPricing>>({})
   const [loadingPricing, setLoadingPricing] = useState(false)
   const [hasError, setHasError] = useState(false)
+  const [fetchedRoomTypes,setFetchedRoomTypes] = useState<{value:string;label:string}[]>([])  
+  const [roomType, setRoomType] = useState<string>();
+  const [roomTypeMap, setRoomTypeMap] = useState<Record<string, any>>({})
 
-  const fetchRoomTypeData = async (roomType: string) => {
-    try {
-      const resp = await fetch("http://localhost:8000/graphql", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          query: `
-            query getRoomType($hotelId: String!, $roomType: RoomType!) {
-              getRoomType(hotelId: $hotelId, roomType: $roomType) {
+  useEffect(() =>{
+  
+      const fetchRoomTypes = async () =>{
+        if(!selectedHotel) return
+  
+        try{
+          const resp = await fetch("http://localhost:8000/graphql",{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body: JSON.stringify({
+              query: `
+                query getRoomTypes($hotelId: String!) {
+                  getRoomTypes(hotelId: $hotelId) {
+                    roomType
                 pricePerNight
                 pricePerNightMax
                 pricePerNightMin
@@ -1531,19 +1539,44 @@ const CreateBookingPage: React.FC = () => {
                 bedCount
                 description
                 isSmoking
-              }
-            }
-          `,
-          variables: { hotelId: selectedHotel?.id, roomType },
-        }),
-      })
 
-      const { data } = await resp.json()
-      return data?.getRoomType || null
-    } catch (error) {
-      return null
-    }
-  }
+                  }
+                }
+              `,
+              variables:{hotelId:selectedHotel.id}    
+            })
+          })
+  
+          const json  = await resp.json();
+          if(json.errors) throw new Error(json.errors[0].message);
+
+          const details = json.data.getRoomTypes;
+  
+          const types = details.map((rt:any) =>({
+            value:rt.roomType,
+            label:rt.roomType.charAt(0).toUpperCase() + rt.roomType.slice(1).toLowerCase(),
+          }))
+
+          const map: Record<string, any> = {};
+          for (const item of details) {
+              map[item.roomType] = item;
+           }
+  
+          setFetchedRoomTypes(types);
+          setRoomTypeMap(map);
+
+          if(types.length>0) setRoomType(types[0].value);
+        }
+        catch(err){
+          console.error("Failed to fetch room Types:",err);
+        }
+      };
+  
+      fetchRoomTypes();
+  
+    },[selectedHotel])
+
+  
 
   const loadAllRoomTypes = async () => {
     if (!selectedHotel?.id) return
@@ -1554,8 +1587,8 @@ const CreateBookingPage: React.FC = () => {
     try {
       const pricingMap: Record<string, RoomPricing> = {}
 
-      for (const roomType of ROOM_TYPES) {
-        const data = await fetchRoomTypeData(roomType)
+      for (const roomType of Object.keys(roomTypeMap)) {
+        const data = roomTypeMap[roomType];
 
         if (data) {
           pricingMap[roomType] = {

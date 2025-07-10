@@ -857,7 +857,7 @@ const bookingSchema = z.object({
   roomTypeBookings: z
     .array(
       z.object({
-        roomType: z.enum(ROOM_TYPES, { required_error: "Room type is required" }),
+        roomType: z.string( { required_error: "Room type is required" }),
         numberOfRooms: z.coerce.number().int().min(1, { message: "At least 1 room is required" }),
       }),
     )
@@ -878,19 +878,31 @@ export default function BookingForm({ onSuccess }: BookingFormProps) {
   const [pricingData, setPricingData] = useState<
     Record<string, { basePrice: number; minPrice: number; maxPrice: number; availableRooms: number }>
   >({})
+  
+  
+
   const [loadingPricing, setLoadingPricing] = useState(false)
 
   const { selectedHotel } = useHotelContext()
+  const [fetchedRoomTypes,setFetchedRoomTypes] = useState<{value:string;label:string}[]>([])  
+  const [roomType, setRoomType] = useState<string>();
+  const [roomTypeMap, setRoomTypeMap] = useState<Record<string, any>>({})
 
-  const fetchRoomTypeData = async (roomType: string) => {
-    try {
-      const resp = await fetch("http://localhost:8000/graphql", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          query: `
-            query getRoomType($hotelId: String!, $roomType: RoomType!) {
-              getRoomType(hotelId: $hotelId, roomType: $roomType) {
+
+  useEffect(() =>{
+  
+      const fetchRoomTypes = async () =>{
+        if(!selectedHotel) return
+  
+        try{
+          const resp = await fetch("http://localhost:8000/graphql",{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body: JSON.stringify({
+              query: `
+                query getRoomTypes($hotelId: String!) {
+                  getRoomTypes(hotelId: $hotelId) {
+                    roomType
                 pricePerNight
                 pricePerNightMax
                 pricePerNightMin
@@ -903,19 +915,45 @@ export default function BookingForm({ onSuccess }: BookingFormProps) {
                 bedCount
                 description
                 isSmoking
-              }
-            }
-          `,
-          variables: { hotelId: selectedHotel?.id, roomType },
-        }),
-      })
 
-      const { data } = await resp.json()
-      return data?.getRoomType || null
-    } catch (error) {
-      return null
-    }
-  }
+                  }
+                }
+              `,
+              variables:{hotelId:selectedHotel.id}    
+            })
+          })
+  
+          const json  = await resp.json();
+          if(json.errors) throw new Error(json.errors[0].message);
+
+          const details = json.data.getRoomTypes;
+        
+
+          const types = details.map((rt:any) =>({
+            value:rt.roomType,
+            label:rt.roomType.charAt(0).toUpperCase() + rt.roomType.slice(1).toLowerCase(),
+          }))
+
+          const map: Record<string, any> = {};
+          for (const item of details) {
+              map[item.roomType] = item;
+           }
+
+
+          setFetchedRoomTypes(types);
+          setRoomTypeMap(map);
+
+          if(types.length>0) setRoomType(types[0].value);
+        }
+        catch(err){
+          console.error("Failed to fetch room Types:",err);
+        }
+      };
+  
+      fetchRoomTypes();
+  
+    },[selectedHotel])
+  
 
   const loadAllRoomTypes = async () => {
     if (!selectedHotel?.id) return
@@ -927,10 +965,9 @@ export default function BookingForm({ onSuccess }: BookingFormProps) {
         string,
         { basePrice: number; minPrice: number; maxPrice: number; availableRooms: number }
       > = {}
-
-      for (const roomType of ROOM_TYPES) {
-        const data = await fetchRoomTypeData(roomType)
-
+      for (const roomType of Object.keys(roomTypeMap)) {
+        const data = roomTypeMap[roomType];
+        
         if (data) {
           pricingMap[roomType] = {
             basePrice: data.pricePerNight || 0,
@@ -950,6 +987,8 @@ export default function BookingForm({ onSuccess }: BookingFormProps) {
       }
 
       setPricingData(pricingMap)
+      console.log(pricingMap)
+      console.log(pricingData)
     } catch (error) {
       setDefaultPricing()
       toast({
@@ -963,10 +1002,10 @@ export default function BookingForm({ onSuccess }: BookingFormProps) {
   }
 
   useEffect(() => {
-    if (selectedHotel?.id) {
+    if (selectedHotel) {
       loadAllRoomTypes()
     }
-  }, [selectedHotel?.id])
+  }, [selectedHotel,roomTypeMap])
 
   const getRoomTypeDefaults = (roomType: string) => {
     const defaults: Record<string, { basePrice: number; minPrice: number; maxPrice: number }> = {
@@ -1378,12 +1417,12 @@ export default function BookingForm({ onSuccess }: BookingFormProps) {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {ROOM_TYPES.map((type) => {
-                                const typePricing = pricingData[type]
+                              {fetchedRoomTypes.map((type) => {
+                                const typePricing = pricingData[type.value]
                                 return (
-                                  <SelectItem key={type} value={type}>
+                                  <SelectItem key={type.value} value={type.value}>
                                     <div className="flex flex-col">
-                                      <span>{type.charAt(0) + type.slice(1).toLowerCase()}</span>
+                                      <span>{type.value.charAt(0) + type.value.slice(1).toLowerCase()}</span>
                                       {typePricing && typePricing.basePrice > 0 && (
                                         <div className="text-xs text-gray-500">
                                           ฿{typePricing.basePrice} (฿{typePricing.minPrice} - ฿{typePricing.maxPrice})

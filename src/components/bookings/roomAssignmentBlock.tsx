@@ -170,14 +170,14 @@ import { Button } from "@/components/ui/button"
 import { UserCheck } from "lucide-react"
 import { format } from "date-fns"
 import { Badge } from "@/components/ui/badge"
-import type { RoomType } from "@/graphql/types/booking"
+
 import type { Room } from "./roomAssignment"
 import { useMutation } from "@apollo/client"
 import { gql } from "@apollo/client"
 import { useToast } from "@/components/ui/use-toast"
 
 const ASSIGN_ROOM_MUTATION = gql`
-  mutation AssignSingleRoomToBooking($bookingId: String!, $roomType: RoomType!, $roomId: String!) {
+  mutation AssignSingleRoomToBooking($bookingId: String!, $roomType: String!, $roomId: String!) {
     assignSingleRoomToBooking(bookingId: $bookingId, roomType: $roomType, roomId: $roomId) {
       id
       roomTypeBookings {
@@ -193,7 +193,7 @@ type RoomBlockProps = {
   room: Room
   bookingId: string
   onAssignmentSuccess?: () => void
-  roomType: RoomType
+  roomType: string
 }
 
 export default function RoomBlock({ room, bookingId, roomType, onAssignmentSuccess }: RoomBlockProps) {

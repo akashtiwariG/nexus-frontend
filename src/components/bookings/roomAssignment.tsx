@@ -185,7 +185,6 @@ import { useState, useEffect } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Skeleton } from "@/components/ui/skeleton"
 import RoomBlock from "./roomAssignmentBlock"
-import type { RoomType } from "@/graphql/types/booking"
 
 export type Room = {
   id: string
@@ -200,7 +199,7 @@ export type Room = {
 
 type RoomGridProps = {
   hotelId: string
-  roomType?: RoomType
+  roomType: string
   floorCount?: number
   bookingId: string
   onAssignmentSuccess?: () => void
@@ -230,7 +229,7 @@ export default function RoomGrid({ hotelId, roomType, floorCount = 5, bookingId,
       query GetRooms {
         rooms(
           hotelId: "${hotelId}"
-          ${roomType ? `roomType: ${roomType}` : ""}
+          roomType: "${roomType}"
           
         ) {
           id
@@ -345,7 +344,7 @@ export default function RoomGrid({ hotelId, roomType, floorCount = 5, bookingId,
                     key={room.id}
                     room={room}
                     bookingId={bookingId}
-                    roomType={roomType as RoomType}
+                    roomType={roomType}
                     onAssignmentSuccess={handleAssignmentSuccess}
                   />
                 ))}

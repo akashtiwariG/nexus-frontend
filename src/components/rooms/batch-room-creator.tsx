@@ -1,6 +1,6 @@
 "use client";
 
-import { SetStateAction, useState } from "react";
+import { SetStateAction, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,6 +13,8 @@ import {
 } from "@/components/ui/select";
 
 import { useHotelContext } from "@/providers/hotel-provider";
+import { Variable } from "lucide-react";
+import { error } from "console";
 
 const roomTypes = [
   { value: "STANDARD", label: "Standard" },
@@ -28,10 +30,52 @@ type Props = {
 
 export default function BatchRoomCreator({ onSuccess }: Props) {
   const { selectedHotel } = useHotelContext();
+  const [fetchedRoomTypes,setFetchedRoomTypes] = useState<{value:string;label:string}[]>([])  
   const [roomType, setRoomType] = useState<string>(roomTypes[0].value);
   const [floor, setFloor] = useState<string>("1");
   const [roomNumbers, setRoomNumbers] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() =>{
+
+    const fetchRoomTypes = async () =>{
+      if(!selectedHotel) return
+
+      try{
+        const resp = await fetch("http://localhost:8000/graphql",{
+          method:"POST",
+          headers:{"Content-Type":"application/json"},
+          body: JSON.stringify({
+            query: `
+              query getAllRoomTypes($hotelId: String!) {
+                getRoomTypes(hotelId: $hotelId) {
+                  roomType
+                }
+              }
+            `,
+            variables:{hotelId:selectedHotel.id}    
+          })
+        })
+
+        const json  = await resp.json();
+        if(json.errors) throw new Error(json.errors[0].message);
+
+        const types = json.data.getRoomTypes.map((rt:any) =>({
+          value:rt.roomType,
+          label:rt.roomType.charAt(0).toUpperCase() + rt.roomType.slice(1).toLowerCase(),
+        }))
+
+        setFetchedRoomTypes(types);
+        if(types.length>0) setRoomType(types[0].value);
+      }
+      catch(err){
+        console.error("Failed to fetch room Types:",err);
+      }
+    };
+
+    fetchRoomTypes();
+
+  },[selectedHotel])
 
   const handleCreate = async () => {
     if (!selectedHotel?.id) return;
@@ -123,17 +167,17 @@ export default function BatchRoomCreator({ onSuccess }: Props) {
         <div>
           <label className="block">Room Type</label>
           <Select value={roomType} onValueChange={setRoomType}>
-            <SelectTrigger>
-              <SelectValue placeholder="Room Type" />
-            </SelectTrigger>
-            <SelectContent>
-              {roomTypes.map((rt) => (
-                <SelectItem key={rt.value} value={rt.value}>
-                  {rt.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+  <SelectTrigger>
+    <SelectValue placeholder="Room Type" />
+  </SelectTrigger>
+  <SelectContent>
+    {fetchedRoomTypes.map((rt) => (
+      <SelectItem key={rt.value} value={rt.value}>
+        {rt.label}
+      </SelectItem>
+    ))}
+  </SelectContent>
+</Select>
         </div>
 
         <div>

@@ -43,7 +43,7 @@ const upgradeOptions = [
   },
 ]
 
-export default function RoomUpgradeModal({
+export  function RoomUpgradeModal({
   isOpen,
   onClose,
   currentRoomType,

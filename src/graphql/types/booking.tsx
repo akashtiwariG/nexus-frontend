@@ -6,7 +6,7 @@ export interface GuestDetails {
 }
 
 export interface RoomTypeBooking {
-  roomType: RoomType // or use `RoomType` enum if strictly typed
+  roomType: string // or use `RoomType` enum if strictly typed
   numberOfRooms: number
   roomIds: string[]
 }
