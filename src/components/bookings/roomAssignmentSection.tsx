@@ -37,7 +37,7 @@ export default function RoomAssignmentSection({ booking }: Props) {
 
   return (
     <div className="space-y-4" key={refreshKey}>
-      {booking.roomTypeBookings?.flatMap((rtb) => {
+      {booking.roomTypeBookings?.flatMap((rtb,outerIdx) => {
         const totalRooms = rtb.numberOfRooms || 0
         const assignedRoomsCount = rtb.roomIds?.length || 0
         const unassignedRoomsCount = totalRooms - assignedRoomsCount
@@ -45,7 +45,7 @@ export default function RoomAssignmentSection({ booking }: Props) {
         return [
           // Render assigned rooms first (without assign button)
           ...Array.from({ length: assignedRoomsCount }).map((_, idx) => {
-            const blockId = `assigned-${rtb.roomType}-${idx}`
+            const blockId = `assigned-${rtb.roomType}-${outerIdx}-${idx}`
             return (
               <div key={blockId} className="border p-4 rounded-lg space-y-2 bg-gray-50">
                 <div>
@@ -59,7 +59,7 @@ export default function RoomAssignmentSection({ booking }: Props) {
 
           // Then render unassigned rooms (with assign button)
           ...Array.from({ length: unassignedRoomsCount }).map((_, idx) => {
-            const blockId = `unassigned-${rtb.roomType}-${idx}`
+            const blockId = `unassigned-${rtb.roomType}-${outerIdx}-${idx}`
             const isVisible = visibleBlock === blockId
 
             return (
