@@ -67,6 +67,8 @@ type Props = {
   onSuccess: () => void;
 };
 
+const endpoint = process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT || "http://localhost:8000/graphql"
+
 export default function UpdateRoomTypeForm({ onSuccess }: Props) {
   const { selectedHotel } = useHotelContext();
   const hotelId = selectedHotel?.id!;
@@ -100,7 +102,7 @@ export default function UpdateRoomTypeForm({ onSuccess }: Props) {
       if(!selectedHotel) return
 
       try{
-        const resp = await fetch("http://localhost:8000/graphql",{
+        const resp = await fetch(endpoint,{
           method:"POST",
           headers:{"Content-Type":"application/json"},
           body: JSON.stringify({
@@ -139,7 +141,7 @@ export default function UpdateRoomTypeForm({ onSuccess }: Props) {
   useEffect(() => {
     async function load() {
       setLoading(true);
-      const resp = await fetch("http://localhost:8000/graphql", {
+      const resp = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -178,7 +180,7 @@ export default function UpdateRoomTypeForm({ onSuccess }: Props) {
   async function onSubmit(values: FormValues) {
     setLoading(true);
     try {
-      const resp = await fetch("http://localhost:8000/graphql", {
+      const resp = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

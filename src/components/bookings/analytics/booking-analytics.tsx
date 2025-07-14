@@ -1230,6 +1230,7 @@ export interface Room {
   isPinned?: boolean
   images?: string[]
 }
+const backendBaseUrl = process.env.BACKEND_BASE_URL;
 
 export default function BookingAnalytics() {
   const [currentDate, setCurrentDate] = useState<Date>(new Date())
@@ -1265,7 +1266,7 @@ export default function BookingAnalytics() {
     try {
       console.log("Fetching bookings with hotel ID:", selectedHotel?.id)
 
-      const endpoint = process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT || "http://localhost:8000/graphql"
+      const endpoint = process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT || `${backendBaseUrl}/graphql`
 
       const response = await fetch(endpoint, {
         method: "POST",

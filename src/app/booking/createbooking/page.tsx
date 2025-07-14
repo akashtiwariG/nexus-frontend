@@ -1512,6 +1512,7 @@ const CreateBookingPage: React.FC = () => {
   const [fetchedRoomTypes,setFetchedRoomTypes] = useState<{value:string;label:string}[]>([])  
   const [roomType, setRoomType] = useState<string>();
   const [roomTypeMap, setRoomTypeMap] = useState<Record<string, any>>({})
+  const endpoint = process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT || "http://localhost:8000/graphql"
 
   useEffect(() =>{
   
@@ -1519,7 +1520,7 @@ const CreateBookingPage: React.FC = () => {
         if(!selectedHotel) return
   
         try{
-          const resp = await fetch("http://localhost:8000/graphql",{
+          const resp = await fetch(endpoint,{
             method:"POST",
             headers:{"Content-Type":"application/json"},
             body: JSON.stringify({

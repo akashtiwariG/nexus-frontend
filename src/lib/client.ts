@@ -5,12 +5,14 @@
 //     cache: new InMemoryCache()
 // })
 
+const backendBaseUrl = process.env.BACKEND_BASE_URL;
+const NEXT_PUBLIC_GRAPHQL_ENDPOINT = process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT
 import { ApolloClient, InMemoryCache, createHttpLink } from "@apollo/client"
 import { setContext } from "@apollo/client/link/context"
 
 // Create an HTTP link with the GraphQL endpoint
 const httpLink = createHttpLink({
-  uri: process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT || "http://localhost:8000/graphql",
+  uri: NEXT_PUBLIC_GRAPHQL_ENDPOINT || "http://localhost:8000/graphql",
 })
 
 // Create an auth link that adds the authorization header

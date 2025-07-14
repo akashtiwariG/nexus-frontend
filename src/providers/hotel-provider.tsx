@@ -43,6 +43,8 @@ const HotelContext = createContext<HotelContextType>({
   fetchUserHotels: async () => {},
 })
 
+const endpoint = process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT || "http://localhost:8000/graphql"
+
 export function HotelProvider({ children }: { children: React.ReactNode }) {
   const [selectedHotel, setSelectedHotel] = useState<Hotel | null>(null)
   const [userHotels, setUserHotels] = useState<Hotel[]>([])
@@ -84,7 +86,7 @@ export function HotelProvider({ children }: { children: React.ReactNode }) {
       console.log("Fetching hotels for user ID:", userId)
       
       
-      const response = await fetch("http://localhost:8000/graphql", {
+      const response = await fetch(endpoint, {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
@@ -177,7 +179,7 @@ export function HotelProvider({ children }: { children: React.ReactNode }) {
     else {
   try {
     // Step 1: Fetch the user to get hotelIds
-    const userResponse = await fetch("http://localhost:8000/graphql", {
+    const userResponse = await fetch(endpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -206,7 +208,7 @@ export function HotelProvider({ children }: { children: React.ReactNode }) {
     
 
     // Step 2: Fetch all hotels
-    const hotelResponse = await fetch("http://localhost:8000/graphql", {
+    const hotelResponse = await fetch(endpoint, {
   method: "POST",
   headers: {
     "Content-Type": "application/json",

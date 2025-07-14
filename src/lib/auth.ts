@@ -112,6 +112,9 @@
 
 import CredentialsProvider from "next-auth/providers/credentials";
 import { NextAuthOptions } from "next-auth";
+const backendBaseUrl = process.env.BACKEND_BASE_URL;
+const NEXT_PUBLIC_GRAPHQL_ENDPOINT = process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT;
+
 
 export const NEXT_AUTH_CONFIG: NextAuthOptions = {
   providers: [
@@ -130,7 +133,7 @@ export const NEXT_AUTH_CONFIG: NextAuthOptions = {
         try {
           console.log(`Authorizing user: ${credentials.username} with password`);
           
-          const response = await fetch("http://localhost:8000/graphql", {
+          const response = await fetch(`${backendBaseUrl}/graphql`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",

@@ -4715,6 +4715,8 @@ interface Notification {
 
 const ROOM_TYPES = ["STANDARD", "DELUXE", "SUITE", "EXECUTIVE", "PRESIDENTIAL"]
 
+const endpoint = process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT || "http://localhost:8000/graphql"
+
 export default function PricingPage() {
   const { toast } = useToast()
   const [loading, setLoading] = useState(false)
@@ -4751,7 +4753,7 @@ export default function PricingPage() {
   // CRITICAL: Use the exact same fetch logic as your working UpdateRoomTypeForm
   const fetchRoomTypeData = async (roomType: string) => {
     try {
-      const resp = await fetch("http://localhost:8000/graphql", {
+      const resp = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -4981,7 +4983,7 @@ export default function PricingPage() {
   // CRITICAL: Use the exact same update logic as your working UpdateRoomTypeForm
   const updateRoomType = async (roomType: string, updateData: any) => {
     try {
-      const resp = await fetch("http://localhost:8000/graphql", {
+      const resp = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

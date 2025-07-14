@@ -49,6 +49,8 @@ type HotelAmenitiesFormProps = {
 }
 
 export default function HotelAmenitiesForm({ onSuccess }: HotelAmenitiesFormProps ) {
+
+  const endpoint = process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT || "http://localhost:8000/graphql"
   // Get the selected hotel from context
   const { selectedHotel, fetchUserHotels } = useHotelContext()
   
@@ -93,7 +95,7 @@ export default function HotelAmenitiesForm({ onSuccess }: HotelAmenitiesFormProp
 
     try {
       // Make the GraphQL mutation call
-      const response = await fetch("http://localhost:8000/graphql", {
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -535,6 +535,7 @@ type FormValues = z.infer<typeof formSchema>
 type CreateRoomTypeFormProps = {
   onSuccess: () => void
 }
+const endpoint = process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT || "http://localhost:8000/graphql"
 
 export default function CreateRoomTypeForm({ onSuccess }: CreateRoomTypeFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -581,7 +582,7 @@ export default function CreateRoomTypeForm({ onSuccess }: CreateRoomTypeFormProp
       if(!selectedHotel) return
 
       try{
-        const resp = await fetch("http://localhost:8000/graphql",{
+        const resp = await fetch(endpoint,{
           method:"POST",
           headers:{"Content-Type":"application/json"},
           body: JSON.stringify({
@@ -657,7 +658,7 @@ export default function CreateRoomTypeForm({ onSuccess }: CreateRoomTypeFormProp
       
       console.log("Submitting form with hotel ID:", submissionValues.hotelId);
       
-      const response = await fetch("http://localhost:8000/graphql", {
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -62,6 +62,8 @@ type CreateRoomFormProps = {
   onSuccess: () => void
 }
 
+const endpoint = process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT || "http://localhost:8000/graphql"
+
 export default function CreateRoomForm({ onSuccess }: CreateRoomFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -98,7 +100,7 @@ export default function CreateRoomForm({ onSuccess }: CreateRoomFormProps) {
       
       console.log("Submitting form with hotel ID:", submissionValues.hotelId);
       
-      const response = await fetch("http://localhost:8000/graphql", {
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -226,9 +228,9 @@ export default function CreateRoomForm({ onSuccess }: CreateRoomFormProps) {
                   </FormItem>
                 )}
               />
-
-
             </div>
+
+            
 
             <div className="flex justify-end">
               <Button type="submit" disabled={isSubmitting}>

@@ -28,6 +28,8 @@ type Props = {
   onSuccess: (createdCount: number) => void;
 };
 
+const endpoint = process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT || "http://localhost:8000/graphql"
+
 export default function BatchRoomCreator({ onSuccess }: Props) {
   const { selectedHotel } = useHotelContext();
   const [fetchedRoomTypes,setFetchedRoomTypes] = useState<{value:string;label:string}[]>([])  
@@ -42,7 +44,7 @@ export default function BatchRoomCreator({ onSuccess }: Props) {
       if(!selectedHotel) return
 
       try{
-        const resp = await fetch("http://localhost:8000/graphql",{
+        const resp = await fetch(endpoint,{
           method:"POST",
           headers:{"Content-Type":"application/json"},
           body: JSON.stringify({
@@ -95,7 +97,7 @@ export default function BatchRoomCreator({ onSuccess }: Props) {
     setIsLoading(true);
     try {
       // ✅ Fetch existing rooms for hotel
-      const existingResp = await fetch("http://localhost:8000/graphql", {
+      const existingResp = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -133,7 +135,7 @@ export default function BatchRoomCreator({ onSuccess }: Props) {
         roomType,
       }));
 
-      const resp = await fetch("http://localhost:8000/graphql", {
+      const resp = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

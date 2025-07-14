@@ -1600,6 +1600,8 @@ import { useHotelContext } from "@/providers/hotel-provider"
 
 const ROOM_TYPES = ["STANDARD", "DELUXE", "SUITE", "EXECUTIVE", "PRESIDENTIAL"] as const
 
+const endpoint = process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT || "http://localhost:8000/graphql"
+
 const bookingSourceOptions = [
   { value: "WEBSITE", label: "Website" },
   { value: "WALK_IN", label: "Walk-in" },
@@ -1673,7 +1675,7 @@ export default function BookingForm({ onSuccess }: BookingFormProps) {
       if (!selectedHotel) return
 
       try {
-        const resp = await fetch("http://localhost:8000/graphql", {
+        const resp = await fetch(endpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
